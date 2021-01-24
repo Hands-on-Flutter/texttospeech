@@ -1,65 +1,81 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(TextToSpeechApp());
 }
 
-class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+class TextToSpeechApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Text to Speech app',
       theme: ThemeData(
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: ColorsScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title;
+class ColorObject {
+  final String name;
+  final MaterialColor color;
 
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
+  ColorObject(this.name, this.color);
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class ColorsScreen extends StatefulWidget {
+  @override
+  _ColorsScreenState createState() => _ColorsScreenState();
+}
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+class _ColorsScreenState extends State<ColorsScreen> {
+  FlutterTts flutterTts = FlutterTts();
+
+  List<ColorObject> colorObjects = [
+    ColorObject('Blue', Colors.blue),
+    ColorObject('Red', Colors.red),
+    ColorObject('Green', Colors.green),
+    ColorObject('Orange', Colors.orange),
+    ColorObject('Teal', Colors.teal),
+    ColorObject('Purple', Colors.purple),
+  ];
+
+  void playColorName(String colorName) async {
+    await flutterTts.speak(colorName);
   }
 
   @override
   Widget build(BuildContext context) {
+    // By using MediaQuery can we get the size of current device
+    Size deviceSize = MediaQuery.of(context).size;
+    // We want the carousel to have 80% of the device height
+    double carouselHeight = deviceSize.height * 0.8;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
+      body: SafeArea(
+        child: Center(
+          child: CarouselSlider(
+            options: CarouselOptions(
+              height: carouselHeight,
+              onPageChanged: (int index, CarouselPageChangedReason reason) {
+                playColorName(colorObjects[index].name);
+              }
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
+            items: colorObjects.map((ColorObject colorObj) {
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 8.0),
+                decoration: BoxDecoration(
+                  color: colorObj.color,
+                  borderRadius: BorderRadius.circular(16.0),
+                ),
+              );
+            }).toList()
+          ),
+        )
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
